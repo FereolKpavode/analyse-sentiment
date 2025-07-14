@@ -1,24 +1,18 @@
 import streamlit as st
-from transformers import AutoTokenizer, AutoModelForSequenceClassification, pipeline
+from transformers import pipeline
 
-# Configuration
 st.set_page_config(page_title="Analyse de sentiment", page_icon="💬")
-st.title("💬 Analyse de sentiment (XLM-Roberta)")
+st.title("💬 Analyse de sentiment (CamemBERT-compatible)")
 st.write("Entrez un avis en français pour déterminer s’il est **positif**, **négatif** ou **neutre**.")
 
-# Chargement du modèle
 @st.cache_resource
 def load_model():
     try:
-        model_name = "cardiffnlp/twitter-xlm-roberta-base-sentiment"
-        tokenizer = AutoTokenizer.from_pretrained(model_name)
-        model = AutoModelForSequenceClassification.from_pretrained(model_name)
-        return pipeline("sentiment-analysis", model=model, tokenizer=tokenizer)
+        return pipeline("sentiment-analysis", model="siebert/sentiment-roberta-large-english")
     except Exception as e:
         st.error(f"Erreur lors du chargement du modèle : {e}")
         return None
 
-# Zone de saisie
 user_input = st.text_area("✍️ Votre avis ici :", height=150)
 
 if st.button("Analyser le sentiment"):
@@ -31,11 +25,9 @@ if st.button("Analyser le sentiment"):
                 score = round(result["score"] * 100, 2)
 
                 st.markdown("### 📊 Résultat de l'analyse")
-                st.write(f"**Sentiment détecté** : {label}")
+                st.success(f"Sentiment : {label} ({score}%)")
                 st.progress(score / 100)
-                st.write(f"**Confiance du modèle** : {score}%")
         else:
             st.warning("Le modèle n’a pas pu être chargé.")
     else:
         st.warning("Veuillez entrer un texte.")
-
